@@ -11,6 +11,9 @@ const config = {
     refreshTtlDays: Number(process.env.REFRESH_TOKEN_TTL_DAYS || 30),
   },
   corsOrigin: (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map((s) => s.trim()),
+  // En producción (Vercel) el frontend y la API comparten dominio: el origen
+  // llega como undefined y el middleware de CORS ya lo permite.
+  isProduction: process.env.VERCEL === '1' || process.env.NODE_ENV === 'production',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   nodeEnv: process.env.NODE_ENV || 'development',
 };

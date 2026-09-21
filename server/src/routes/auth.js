@@ -148,7 +148,7 @@ router.post('/forgot-password', async (req, res, next) => {
     });
 
     // Sin SMTP configurado, devolvemos el enlace en la respuesta para poder usarlo en local.
-    const resetUrl = `${config.frontendUrl}/#/reset-password?token=${token}`;
+    const resetUrl = `${config.frontendUrl}/reset-password?token=${token}`;
     res.json({
       ok: true,
       message: 'Enlace de recuperación generado.',

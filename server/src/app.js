@@ -14,9 +14,12 @@ const usersRoutes = require('./routes/users');
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 app.use(
   cors({
     origin: (origin, cb) => {
+      // Same-origin (producción en Vercel) o peticiones sin origen: permitir.
       if (!origin || config.corsOrigin.includes(origin) || config.corsOrigin.includes('*')) {
         return cb(null, true);
       }

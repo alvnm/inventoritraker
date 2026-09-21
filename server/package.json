@@ -8,6 +8,7 @@
     "start": "node src/index.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
+    "postinstall": "prisma generate",
     "migrate": "prisma migrate deploy",
     "seed": "node prisma/seed.js",
     "typecheck": "node --check src/index.js && node --check src/app.js"

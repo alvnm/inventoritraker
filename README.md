@@ -109,6 +109,44 @@ npm run dev
 
 El frontend hace proxy de `/api` al backend en desarrollo.
 
+## 🚢 Despliegue en producción (Vercel + Supabase)
+
+Un solo proyecto de Vercel sirve el frontend (estático) y la API (función serverless) bajo el mismo dominio.
+
+### 1. Crear la base de datos en Supabase (con GitHub)
+
+1. Entra en [supabase.com](https://supabase.com) → **Sign in with GitHub**.
+2. **New project**: elige nombre, región cercana y una contraseña de base de datos (guárdala).
+3. Cuando termine el aprovisionamiento, ve a **Project Settings → Database → Connection string**:
+   - **Session pooler (puerto 5432)** → esta será `DATABASE_URL`.
+   - **Direct connection (puerto 5432, host `db.<ref>.supabase.co`)** → esta será `DIRECT_URL` (usada por migraciones/seed).
+   - Sustituye `[YOUR-PASSWORD]` por la contraseña que elegiste.
+
+### 2. Importar el repo en Vercel (con GitHub)
+
+1. Entra en [vercel.com](https://vercel.com) → **Continue with GitHub** y autoriza el acceso.
+2. **Add New → Project** → importa `alvnm/inventoritraker`. La configuración de `vercel.json` (build, salida y rewrites) se aplica sola.
+
+### 3. Variables de entorno en Vercel (Project → Settings → Environment Variables)
+
+| Variable | Valor |
+|---|---|
+| `DATABASE_URL` | Session pooler de Supabase (paso 1) |
+| `DIRECT_URL` | Conexión directa de Supabase (paso 1) |
+| `JWT_ACCESS_SECRET` | Cadena larga aleatoria (`openssl rand -base64 48`) |
+| `JWT_REFRESH_SECRET` | Otra cadena distinta |
+| `JWT_RECOVERY_SECRET` | Otra cadena distinta |
+| `CORS_ORIGIN` | `https://tu-proyecto.vercel.app` (sin barra final) |
+| `FRONTEND_URL` | `https://tu-proyecto.vercel.app` (para enlaces de recuperación) |
+
+El build de cada deploy ejecuta automáticamente: `prisma generate` → `prisma db push` (crea/actualiza tablas) → `prisma db seed` (~55 objetos) → build del cliente.
+
+### 4. Deploy
+
+Pulsa **Deploy**. Cada `git push` a `main` hará deploy a producción; las ramas generan previews.
+
+> Local: `cp server/.env.example server/.env` y rellena las variables; con `npm run dev` todo sigue funcionando igual.
+
 ## 🔌 API (resumen)
 
 | Método | Ruta | Descripción |
