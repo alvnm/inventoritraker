@@ -1,0 +1,19 @@
+{
+  "name": "dnd-inventory-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "D&D Inventory Tracker — gestiona los inventarios de tu campaña de Dungeons & Dragons",
+  "scripts": {
+    "setup": "npm --prefix server install && npm --prefix client install",
+    "dev": "concurrently -n server,client -c yellow,cyan \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "seed": "npm --prefix server run seed",
+    "typecheck": "npm --prefix client run typecheck && npm --prefix server run typecheck",
+    "postinstall": "npm --prefix server run prisma:generate"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

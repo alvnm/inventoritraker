@@ -1,0 +1,220 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PLAYER
+  DM
+}
+
+enum ItemCategory {
+  WEAPONS
+  ARMOR
+  POTIONS
+  MAGIC_ITEMS
+  TOOLS
+  FOOD
+  MATERIALS
+  MISC
+}
+
+enum ItemRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  VERY_RARE
+  LEGENDARY
+}
+
+enum CampaignRole {
+  DM
+  PLAYER
+}
+
+enum LogAction {
+  ADD_ITEM
+  REMOVE_ITEM
+  UPDATE_ITEM
+  EQUIP_ITEM
+  UNEQUIP_ITEM
+  UPDATE_CURRENCY
+  TRANSFER_ITEM
+  DM_GRANT_ITEM
+}
+
+model User {
+  id             String   @id @default(cuid())
+  username       String   @unique
+  email          String   @unique
+  password       String
+  role           Role     @default(PLAYER)
+  allowDmEdit    Boolean  @default(false)
+  avatarUrl      String?
+  resetToken     String?
+  resetExpires   DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  characters        Character[]
+  customItems       Item[]
+  campaignMembers   CampaignMember[]
+  ownedCampaigns    Campaign[]       @relation("CampaignOwner")
+  inventoryLogs     InventoryLog[]
+  sentTransfers     TransferLog[]    @relation("TransferFromUser")
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  inviteCode  String   @unique @default(cuid())
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner      User             @relation("CampaignOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members    CampaignMember[]
+  characters Character[]
+  items      Item[]
+
+  @@index([ownerId])
+}
+
+model CampaignMember {
+  id         String       @id @default(cuid())
+  campaignId String
+  userId     String
+  role       CampaignRole @default(PLAYER)
+  joinedAt   DateTime     @default(now())
+
+  campaign   Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, userId])
+  @@index([userId])
+}
+
+model Character {
+  id            String   @id @default(cuid())
+  ownerId       String
+  campaignId    String?
+  name          String
+  level         Int      @default(1)
+  className     String   @default("Aventurero")
+  race          String   @default("Humano")
+  description   String?
+  strength      Int      @default(10)
+  dexterity     Int      @default(10)
+  constitution  Int      @default(10)
+  intelligence  Int      @default(10)
+  wisdom        Int      @default(10)
+  charisma      Int      @default(10)
+  maxCapacity   Float    @default(15)
+  avatarUrl     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner      User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  campaign   Campaign?       @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  items      CharacterItem[]
+  currency   Currency?
+  inventoryLogs InventoryLog[] @relation("LogCharacter")
+  transfersIn  TransferLog[]  @relation("TransferToCharacter")
+
+  @@index([ownerId])
+  @@index([campaignId])
+}
+
+/// Catálogo: biblioteca global, plantillas de usuario y objetos por campaña
+model Item {
+  id            String       @id @default(cuid())
+  name          String
+  description   String?
+  category      ItemCategory @default(MISC)
+  weight        Float        @default(0)
+  value         Float        @default(0)
+  rarity        ItemRarity   @default(COMMON)
+  imageUrl      String?
+  equippable    Boolean      @default(false)
+  isLibrary     Boolean      @default(false)
+  ownerId       String?
+  campaignId    String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  owner          User?           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  campaign       Campaign?       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  characterItems CharacterItem[]
+
+  @@index([isLibrary])
+  @@index([ownerId])
+  @@index([campaignId])
+}
+
+/// Instancia de un objeto en el inventario de un personaje
+model CharacterItem {
+  id          String    @id @default(cuid())
+  characterId String
+  itemId      String
+  quantity    Int       @default(1)
+  equipped    Boolean   @default(false)
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  item      Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, itemId])
+  @@index([characterId])
+  @@index([itemId])
+}
+
+model Currency {
+  id          String   @id @default(cuid())
+  characterId String   @unique
+  platinum    Int      @default(0)
+  gold        Int      @default(0)
+  electrum    Int      @default(0)
+  silver      Int      @default(0)
+  copper      Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+model InventoryLog {
+  id          String    @id @default(cuid())
+  characterId String?
+  userId      String
+  action      LogAction
+  detail      String?
+  createdAt   DateTime  @default(now())
+
+  character Character? @relation("LogCharacter", fields: [characterId], references: [id], onDelete: SetNull)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([characterId])
+  @@index([userId])
+}
+
+model TransferLog {
+  id          String   @id @default(cuid())
+  fromUserId  String
+  toCharId    String
+  itemId      String
+  quantity    Int      @default(1)
+  note        String?
+  createdAt   DateTime @default(now())
+
+  fromUser  User      @relation("TransferFromUser", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toChar    Character @relation("TransferToCharacter", fields: [toCharId], references: [id], onDelete: Cascade)
+
+  @@index([fromUserId])
+  @@index([toCharId])
+}
