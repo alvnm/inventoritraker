@@ -11,8 +11,6 @@ import { defineConfig } from 'prisma/config';
  * - No usamos el helper `env()` porque lanza error si la variable no existe, y
  *   esta config se carga también en comandos que no necesitan BD (p. ej. `generate`).
  *   Con `process.env` y fallback vacío, `generate` funciona sin DATABASE_URL.
- * - En local `DIRECT_URL` puede estar vacío (ver server/.env.example); en
- *   producción (Supabase) apunta a la conexión directa para migraciones.
  */
 export default defineConfig({
   schema: 'prisma/schema.prisma',
@@ -22,8 +20,5 @@ export default defineConfig({
   engine: 'classic',
   datasource: {
     url: process.env.DATABASE_URL ?? '',
-    // Solo envía directUrl si está definida. Si algún día quitas `directUrl`
-    // del schema, esta config deja de enviarla automáticamente.
-    ...(process.env.DIRECT_URL ? { directUrl: process.env.DIRECT_URL } : {}),
   },
 });

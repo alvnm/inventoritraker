@@ -118,8 +118,7 @@ Un solo proyecto de Vercel sirve el frontend (estático) y la API (función serv
 1. Entra en [supabase.com](https://supabase.com) → **Sign in with GitHub**.
 2. **New project**: elige nombre, región cercana y una contraseña de base de datos (guárdala).
 3. Cuando termine el aprovisionamiento, ve a **Project Settings → Database → Connection string**:
-   - **Session pooler (puerto 5432)** → esta será `DATABASE_URL`.
-   - **Direct connection (puerto 5432, host `db.<ref>.supabase.co`)** → esta será `DIRECT_URL` (usada por migraciones/seed).
+   - **Session pooler (puerto 5432)** → esta será `DATABASE_URL` (consultas de la app y también migraciones del CLI; no se necesita `DIRECT_URL`).
    - Sustituye `[YOUR-PASSWORD]` por la contraseña que elegiste.
 
 ### 2. Importar el repo en Vercel (con GitHub)
@@ -132,7 +131,6 @@ Un solo proyecto de Vercel sirve el frontend (estático) y la API (función serv
 | Variable | Valor |
 |---|---|
 | `DATABASE_URL` | Session pooler de Supabase (paso 1) |
-| `DIRECT_URL` | Conexión directa de Supabase (paso 1) |
 | `JWT_ACCESS_SECRET` | Cadena larga aleatoria (`openssl rand -base64 48`) |
 | `JWT_REFRESH_SECRET` | Otra cadena distinta |
 | `JWT_RECOVERY_SECRET` | Otra cadena distinta |
