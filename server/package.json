@@ -13,9 +13,6 @@
     "seed": "node prisma/seed.js",
     "typecheck": "node --check src/index.js && node --check src/app.js"
   },
-  "prisma": {
-    "seed": "node prisma/seed.js"
-  },
   "dependencies": {
     "@prisma/client": "^6.2.0",
     "bcryptjs": "^2.4.3",
