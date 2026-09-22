@@ -22,6 +22,8 @@ export default defineConfig({
   engine: 'classic',
   datasource: {
     url: process.env.DATABASE_URL ?? '',
-    directUrl: process.env.DIRECT_URL ?? '',
+    // Solo envía directUrl si está definida. Si algún día quitas `directUrl`
+    // del schema, esta config deja de enviarla automáticamente.
+    ...(process.env.DIRECT_URL ? { directUrl: process.env.DIRECT_URL } : {}),
   },
 });
